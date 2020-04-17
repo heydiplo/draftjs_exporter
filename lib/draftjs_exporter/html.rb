@@ -7,12 +7,13 @@ require 'draftjs_exporter/command'
 
 module DraftjsExporter
   class HTML
-    attr_reader :block_map, :style_map, :entity_decorators
+    attr_reader :block_map, :style_map, :entity_decorators, :block_callback
 
-    def initialize(block_map:, style_map:, entity_decorators:)
+    def initialize(block_map:, style_map:, entity_decorators:, block_callback: nil)
       @block_map = block_map
       @style_map = style_map
       @entity_decorators = entity_decorators
+      @block_callback = block_callback
     end
 
     def call(content_state, options = {})
@@ -21,6 +22,7 @@ module DraftjsExporter
         element = wrapper_state.element_for(block)
         entity_map = content_state.fetch(:entityMap, {})
         block_contents(element, block, entity_map)
+        block_callback&.call(element, block)
       end
       wrapper_state.to_html(options)
     end
