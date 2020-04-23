@@ -23,15 +23,25 @@ module DraftjsExporter
 
     def element_attributes
       return {} unless styles.any?
-      { style: styles_css }
+
+      current_styles = styles.map { |style| style_map.fetch(style) }
+
+      class_name = class_name_from_styles(current_styles)
+      css = styles_css_from_styles(current_styles)
+
+      { style: css, class: class_name }
     end
 
-    def styles_css
-      styles.map { |style|
-        style_map.fetch(style)
-      }.inject({}, :merge).map { |key, value|
+    def styles_css_from_styles(current_styles)
+      current_styles.inject({}, :merge).map { |key, value|
+        next if key == :className
+
         "#{hyphenize(key)}: #{value};"
       }.join
+    end
+
+    def class_name_from_styles(current_styles)
+      current_styles.map { |style| style[:className] }.compact.join(' ')
     end
 
     def hyphenize(string)
